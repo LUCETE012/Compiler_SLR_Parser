@@ -105,7 +105,7 @@ ACTION = {
 
 def main():
     if len(sys.argv) != 2:
-        print("python syntax_analyzer.py <input_file> 혁식으로 입력해주세요.")
+        print("python3 syntax_analyzer.py <input_file> 형식으로 입력해주세요.")
         sys.exit(1)
 
     input_file = sys.argv[1]
