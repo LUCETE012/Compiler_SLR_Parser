@@ -1,3 +1,5 @@
+import sys
+
 GOTO = {
     0: {'CODE': 1, 'VDECL': 2, 'FDECL': 3},
     2: {'CODE': 5, 'VDECL': 2, 'FDECL': 3},
@@ -100,3 +102,22 @@ ACTION = {
     73: {'rbrace': ('s', 74)},
     74: {'vtype': ('r', 31), 'id': ('r', 31), 'rbrace': ('r', 31), 'if': ('r', 31), 'while': ('r', 31), 'return': ('r', 31)},
 }
+
+def main():
+    if len(sys.argv) != 2:
+        print("python syntax_analyzer.py <input_file> 혁식으로 입력해주세요.")
+        sys.exit(1)
+
+    input_file = sys.argv[1]
+
+    try:
+        with open(input_file, 'r', encoding='utf-8') as file:
+            content = file.read()
+        words = content.split()
+        print(words)
+    except FileNotFoundError:
+        print(f"File '{input_file}' not found.")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
