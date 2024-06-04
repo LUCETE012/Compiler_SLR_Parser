@@ -103,6 +103,25 @@ ACTION = {
     74: {'vtype': ('r', 31), 'id': ('r', 31), 'rbrace': ('r', 31), 'if': ('r', 31), 'while': ('r', 31), 'return': ('r', 31)},
 }
 
+reduction = [
+    ('S', 1),
+    ('CODE', 2), ('CODE', 2), ('CODE', 0),
+    ('VDECL', 3), ('VDECL', 3),
+    ('ASSIGN', 3),
+    ('RHS', 1), ('RHS', 1), ('RHS', 1), ('RHS', 1),
+    ('EXPR', 3), ('EXPR', 1), ('EXPR', 3),
+    ('TERM', 3), ('TERM', 1),
+    ('FACTOR', 1), ('FACTOR', 1),
+    ('FDECL', 9),
+    ('ARG', 3), ('ARG', 0),
+    ('MOREARGS', 4), ('MOREARGS', 0),
+    ('BLOCK', 2), ('BLOCK', 0),
+    ('STMT', 1), ('STMT', 2), ('STMT', 8), ('STMT', 7),
+    ('COND', 3), ('COND', 1),
+    ('ELSE', 4), ('ELSE', 0),
+    ('RETURN', 3)
+]
+
 def main():
     if len(sys.argv) != 2:
         print("python3 syntax_analyzer.py <input_file> 형식으로 입력해주세요.")
