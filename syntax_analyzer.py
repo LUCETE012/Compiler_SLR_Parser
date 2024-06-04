@@ -122,6 +122,45 @@ reduction = [
     ('RETURN', 3)
 ]
 
+class Tree:
+    def __init__(self, value):
+        self.value = value
+        self.children = []
+
+def make_child(reduction_num, children):
+    parent_value = reduction[reduction_num][0] #reduction으로 부모 값 설정
+    parent = Tree(parent_value)
+    parent.children = children
+    return parent
+
+def get_color(level): #트꾸용 함수
+    colors = [
+        "\033[38;5;187m",
+        "\033[38;5;159m",
+        "\033[38;5;151m",  
+        "\033[38;5;223m",
+        "\033[38;5;225m",
+        "\033[38;5;158m",
+    ]
+    return colors[level % len(colors)]
+
+def print_tree(node, level=0, is_last_child=True, indent=''): #트리 출력(트꾸 완료)
+    color = get_color(level)
+    reset = "\033[0m"
+
+    if level == 0:
+        print(color + node.value + reset)
+    else:
+        prefix = ('└─' if is_last_child else '├─')
+        print(indent + color + prefix + node.value + reset)
+    
+    indent += color + ('    ' if is_last_child else '│   ') + reset
+    
+    child_count = len(node.children)
+    for i, child in enumerate(node.children):
+        is_last = (i == child_count - 1)
+        print_tree(child, level + 1, is_last, indent)
+
 def main():
     if len(sys.argv) != 2:
         print("python3 syntax_analyzer.py <input_file> 형식으로 입력해주세요.")
@@ -132,11 +171,67 @@ def main():
     try:
         with open(input_file, 'r', encoding='utf-8') as file:
             content = file.read()
-        words = content.split()
-        print(words)
+        tokens = content.split()
+        tokens.append("$")
+        print(tokens)
     except FileNotFoundError:
         print(f"File '{input_file}' not found.")
         sys.exit(1)
+
+    state_stack = [0]
+    token_stack = [] #토큰들 저장(트리 출력용)
+    pointer = 0
+
+    while True:
+        current_state = state_stack[-1]
+        current_token = tokens[pointer]
+        action = ACTION.get(current_state, {}).get(current_token, None) #cur_state에서 cur_token으로 할 수 있는 ACTION 목록 가져옴
+
+        if action is None: #action 없으면 현재 토큰으로 할 수 있는 거 없다는 뜻
+            print(f"[Error!] Unrecognized token '{current_token}' at position {pointer + 1}.")
+            sys.exit(1)
+
+        if action[0] == 's': #Shift 부분
+            state_stack.append(action[1]) #다음 action으로 넘어가기 위해 stack에 추가
+            token_stack.append(Tree(current_token)) #tree에 현재 토큰 추가
+            pointer += 1
+        elif action[0] == 'r': #Reduce 부분
+            reduction_num = action[1]
+            lhs, num_rhs = reduction[reduction_num] #reduction에서 lhs가 뭔지, rhs개수 가져오기(pop얼마나 할지 결정용)
+
+            children = []
+            for _ in range(num_rhs):
+                child = token_stack.pop() #스택에서 자식 노드 pop
+                children.append(child) #자식 노드 추가
+
+            
+            children = children[::-1] #리스트를 역순으로 정렬
+            parent = make_child(reduction_num, children) #자식 노드들로 부모노드 생성
+            token_stack.append(parent) #부모노드 stack에 추가
+            for _ in range(num_rhs): #rhs 개수만큼 pop
+                state_stack.pop()
+
+            goto_state = GOTO.get(state_stack[-1], {}).get(lhs, None) #스택 맨 위에 있는 state랑 lhs로 할 수 있는 (action, state)가져오기
+            if goto_state is None: #reduce할 거 없다는 뜻
+                print(f"[Error!] No GOTO entry for state {state_stack[-1]} and lhs {lhs}.")
+                sys.exit(1)
+
+            state_stack.append(goto_state) #stack에 다음 action, state 넣기
+        elif action[0] == 'a': #Accept 부분
+            root = token_stack[0] #stack제일 처음을 root로
+            print_tree(root) #트리 출력
+            print("\033[92m┌─────────────────────┐\033[0m") #Accept 호들갑 함 떨어주기
+            print("\033[92m│                     │\033[0m")
+            print("\033[92m│                     │\033[0m")
+            print("\033[92m│      Accepted!!     │\033[0m")
+            print("\033[92m│                     │\033[0m")
+            print("\033[92m│                     │\033[0m")
+            print("\033[92m└─────────────────────┘\033[0m")
+            break
+        else:
+            print(f"[Error!] Invalid action {action} for token {current_token} at state {current_state}.") #s, r, a아무것도 아닌 경우, 그냥 예외처리용
+            sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
