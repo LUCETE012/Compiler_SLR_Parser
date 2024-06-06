@@ -127,13 +127,22 @@ class Tree:
         self.value = value
         self.children = []
 
+def print_reject():
+    print("\033[91m┌─────────────────────┐\033[0m") #Reject 출력
+    print("\033[91m│                     │\033[0m")
+    print("\033[91m│                     │\033[0m")
+    print("\033[91m│      Reject!!       │\033[0m")
+    print("\033[91m│                     │\033[0m")
+    print("\033[91m│                     │\033[0m")
+    print("\033[91m└─────────────────────┘\033[0m")
+
 def make_child(reduction_num, children):
     parent_value = reduction[reduction_num][0] #reduction으로 부모 값 설정
     parent = Tree(parent_value)
     parent.children = children
     return parent
 
-def get_color(level): #트꾸용 함수
+def get_color(level): #트리꾸미기용 함수
     colors = [
         "\033[38;5;187m",
         "\033[38;5;159m",
@@ -188,6 +197,7 @@ def main():
         action = ACTION.get(current_state, {}).get(current_token, None) #cur_state에서 cur_token으로 할 수 있는 ACTION 목록 가져옴
 
         if action is None: #action 없으면 현재 토큰으로 할 수 있는 거 없다는 뜻
+            print_reject()
             print(f"[Error!] Unrecognized token '{current_token}' at position {pointer + 1}.")
             sys.exit(1)
 
@@ -213,6 +223,7 @@ def main():
 
             goto_state = GOTO.get(state_stack[-1], {}).get(lhs, None) #스택 맨 위에 있는 state랑 lhs로 할 수 있는 (action, state)가져오기
             if goto_state is None: #reduce할 거 없다는 뜻
+                print_reject()
                 print(f"[Error!] No GOTO entry for state {state_stack[-1]} and lhs {lhs}.")
                 sys.exit(1)
 
@@ -229,6 +240,7 @@ def main():
             print("\033[92m└─────────────────────┘\033[0m")
             break
         else:
+            print_reject()
             print(f"[Error!] Invalid action {action} for token {current_token} at state {current_state}.") #s, r, a아무것도 아닌 경우, 그냥 예외처리용
             sys.exit(1)
 
